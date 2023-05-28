@@ -3,8 +3,7 @@ import sqlite_bot, time, config
 def output(message):
     birthday_list = sqlite_bot.bd_list(message, "", 0)
     if not birthday_list:
-        bot.send_message(message.chat.id, "Список дней рождений еще пуст", reply_to_message_id=manual_thread_id)
-        return
+        return "Список дней рождений еще пуст"
     birthday_next = ['0', '0', '0', '0', '0', '0']
     message_next = "Ближайший день рождения в чате у:\n"
     time_now = time.localtime()
