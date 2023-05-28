@@ -32,8 +32,10 @@ def helpmenu(message):
 event_job = threading.Event()
 def job_handler():
     while not event_job.is_set():
-        output_message = bd_next.output(config.manual_chat_id, bot_id)
-        bot.send_message(config.manual_chat_id, output_message, reply_to_message_id=config.manual_thread_id, parse_mode="HTML")
+        days_left = bd_next.count_days(config.manual_chat_id, bot_id)
+        if days_left < 3:
+            output_message = bd_next.output(config.manual_chat_id, bot_id)
+            bot.send_message(config.manual_chat_id, output_message, reply_to_message_id=config.manual_thread_id, parse_mode="HTML")
         event_job.wait(43200)
 
 job_thread = threading.Thread(target=job_handler)
