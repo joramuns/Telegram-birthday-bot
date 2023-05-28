@@ -8,32 +8,8 @@ import threading
 import random
 
 bot = telebot.TeleBot(config.token);
-global bot_state
-bot_state = 0
 bot_id = bot.get_me().id
 last_message=""
-
-@bot.message_handler(commands=["start"])
-def start(message, res=False):
-    if message.from_user.username != config.owner:
-        bot.send_message(message.chat.id, 'Только мой господин может заводить меня')
-        return
-    global bot_state
-    if bot_state == 0:
-        bot.send_message(message.chat.id, 'Хозяин, я готов к работе')
-        bot_state = bot_state + 1
-    else:
-        bot.send_message(message.chat.id, 'Хозяин, я уже в работе')
-
-@bot.message_handler(commands=["stop"])
-def stop(message):
-    if message.from_user.username != config.owner:
-        bot.send_message(message.chat.id, 'Только мой господин может остановить меня')
-        return
-    global bot_state
-    if bot_state == 1:
-        bot_state = bot_state - 1
-        bot.send_message(message.chat.id, 'До новых встреч, неудачники!')
 
 @bot.message_handler(commands=["ближайшаяднюха", "birthday_next"])
 def birthday_next(message):
@@ -57,7 +33,7 @@ def birthday(message):
 
 @bot.message_handler(commands=["помощь"])
 def helpmenu(message):
-    bot.send_message(message.chat.id, "<b>Инструкция по днюхоботу:</b>\n\n- <b>\"/днюха ДД.ММ.ГГГГ\"</b> - установить свою дату рождения в формате ДД.ММ.ГГГГ или ДД.ММ\n- <b>\"/днюха\"</b> - посмотреть какую дату рождения будет отображать бот у тебя\n- <b>\"/днюхи\"</b> - посмотреть сколько именниников в каждом месяце в этом чате\n- <b>\"/днюхи января\"</b> - посмотреть какие дни рождения в январе (или в другом месяце, указывать в родительном падеже)\n- <b>\"/ближайшаяднюха\"</b> - покажет кто скоро проставляется!", parse_mode="HTML", reply_to_message_id=config.manual_thread_id)
+    bot.send_message(message.chat.id, config.help_message, parse_mode="HTML", reply_to_message_id=config.manual_thread_id)
 
 event_job = threading.Event()
 def job_handler():
