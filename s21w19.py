@@ -2,7 +2,7 @@
 import telebot
 from telebot.types import BotCommand
 import re, time
-import config, sqlite_bot, bd_next
+import config, sqlite_bot, bd_next, bd
 import threading
 #temp
 import random
@@ -42,7 +42,6 @@ def birthday_next(message):
         last_message = message
         last_message.from_user.id = bot_id
 
-    # output_message = "aboba"
     output_message = bd_next.output(message)
     bot.send_message(message.chat.id, output_message, reply_to_message_id=config.manual_thread_id, parse_mode="HTML")
 
@@ -112,99 +111,8 @@ def birthday_list(message):
 
 @bot.message_handler(commands=["днюха", "birthday"])
 def birthday(message):
-    array_words = message.text.split()
-    pattern_birthday = "([0-9]{2})\.([0-9]{2})\.([0-9]{4})$"
-    pattern_birthday2 = "([0-9]{2})\.([0-9]{2})$"
-    if (len(array_words) > 2):
-        bot.send_message(message.chat.id, "Нужно ввести команду и через пробел дату без лишних слов!", reply_to_message_id=config.manual_thread_id)
-        return
-
-    if (len(array_words) == 1):
-        check_register = sqlite_bot.check_bd(message)
-        if check_register:
-            message_done = check_register[0][2] + " родился " + str(check_register[0][3]) + " " + config.monthes[check_register[0][4]-1]
-            if check_register[0][5] == 0:
-                message_done = message_done + " неизвестно какого года."
-            else:
-                message_done = message_done + " " + str(check_register[0][5]) + " года!"
-            bot.send_message(message.chat.id, message_done, reply_to_message_id=config.manual_thread_id)
-            return
-        else:
-            bot.send_message(message.chat.id, "Необходимо ввести команду\n/birthday и через пробел дату рождения в формате ДД.ММ.ГГГГ или ДД.ММ, если есть что скрывать", reply_to_message_id=config.manual_thread_id)
-        return
-
-    birthdate = array_words[1]
-
-    if not re.match(pattern_birthday, birthdate) and not re.match(pattern_birthday2, birthdate):
-        bot.send_message(message.chat.id, "Формат даты принимается только в таких видах - 00.00.0000 или 00.00", reply_to_message_id=config.manual_thread_id)
-        return
-
-    day = birthdate[:2]
-    month = birthdate[3:5]
-    if re.match(pattern_birthday, birthdate):
-        year = birthdate[6:]
-    else:
-        year = '0'
-
-    if int(day) < 1 or int(day) > 31:
-        bot.send_message(message.chat.id, "Такого дня не может быть", reply_to_message_id=config.manual_thread_id)
-        return
-
-    if int(month) < 1 or int(month) > 12:
-        bot.send_message(message.chat.id, "В году 12 месяцев, вообще-то", reply_to_message_id=config.manual_thread_id)
-        return
-
-    if (year == '0000'):
-        bot.send_message(message.chat.id, "А ты француз, бом бом бом!", reply_to_message_id=config.manual_thread_id)
-        return
-
-    if ((int(year) > time.localtime().tm_year - 1) or int(year) < 1922) and (int(year) != 0):
-        bot.send_message(message.chat.id, "Ну не может быть такого года рождения, что за вздор", reply_to_message_id=config.manual_thread_id)
-        return
-
-    if (int(year) == time.localtime().tm_year and int(month) >= time.localtime().tm_mon and int(day) > time.localtime().tm_mday):
-        bot.send_message(message.chat.id, "Аларм! В чате гость из будущего!", reply_to_message_id=config.manual_thread_id)
-        return
-
-    if int(day) > config.monthes_length[int(month)-1]:
-        if (int(month) == 2 and int(year) != 0):
-            if (int(year) % 4 != 0):
-                bot.send_message(message.chat.id, "Это не високосный год, какое "+ day +"-е февраля!?", reply_to_message_id=config.manual_thread_id)
-                return
-        else:
-            bot.send_message(message.chat.id, "А нет столько дней в этом месяце!", reply_to_message_id=config.manual_thread_id)
-            return
-
-    if int(month) == 2 and int(day) > 29:
-        bot.send_message(message.chat.id, "Нет столько дней в этом феврале!", reply_to_message_id=config.manual_thread_id)
-        return
-
-    if not message.from_user.username:
-        message.from_user.username = '0'
-
-    check_register = sqlite_bot.check_bd(message)
-    if (check_register):
-        sqlite_bot.change_bd(message, day, month, year)
-        message_done = "Меняю дату рождения пользователя " + check_register[0][2] + " с " + str(check_register[0][3]) + " " + config.monthes[check_register[0][4]-1]
-        if check_register[0][5] == 0:
-            message_done = message_done + " на "
-        else:
-            message_done = message_done + " " + str(check_register[0][5]) + " года на "
-        message_done = message_done + day + " " + config.monthes[int(month)-1]
-        if year == '0':
-            message_done = message_done + "."
-        else:
-            message_done = message_done + " " + year + " года."
-
-    else:
-        sqlite_bot.add_bd(message, day, month, year)
-        message_done = "Внесу в блокнот, что " + message.from_user.first_name + " родился(-ась) " + day + " " + config.monthes[int(month)-1]
-        if year == '0':
-            message_done = message_done + " , а возраст будет секретиком."
-        else:
-            message_done = message_done + " , в " + year + " году."
-
-    bot.send_message(message.chat.id, message_done, parse_mode="HTML", reply_to_message_id=config.manual_thread_id)
+    output_message = bd.output(message)
+    bot.send_message(message.chat.id, output_message, parse_mode="HTML", reply_to_message_id=config.manual_thread_id)
 
 @bot.message_handler(commands=["помощь"])
 def helpmenu(message):
