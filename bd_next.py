@@ -1,7 +1,7 @@
 import sqlite_bot, time, config
 
-def output(message):
-    birthday_list = sqlite_bot.bd_list(message, "", 0)
+def output(chat_id, user_id):
+    birthday_list = sqlite_bot.bd_list(chat_id, user_id, "", 0)
     if not birthday_list:
         return "Список дней рождений еще пуст"
     birthday_next = ['0', '0', '0', '0', '0', '0']
@@ -14,9 +14,9 @@ def output(message):
         # Сегодня день рождения
         if time_now.tm_mon ==  birthday_list[i][4] and time_now.tm_mday == birthday_list[i][3]:
             if (birthday_list[i][5] == 0):
-                str_age = " Сколько исполнилось - пусть скажет именинник! \U0001F38A"
+                str_age = " Сколько исполнилось - пусть скажет именинник! \U0001F38A \n"
             else:
-                str_age = "С " + str(time_now.tm_year - birthday_list[i][5]) + " летием, " + birthday_list[i][2] + "!!! \U0001F388"
+                str_age = "С " + str(time_now.tm_year - birthday_list[i][5]) + " летием, " + birthday_list[i][2] + "!!! \U0001F388 \n"
             message_next = message_next + "\n\U0001F389 Сегодня, " + str(birthday_list[i][3]) + " " + config.monthes[birthday_list[i][4]-1] + ", у <b>" + birthday_list[i][2] + "</b> день рождения! \U0001F381 "  + str_age
 
         if ((time_now.tm_mon == birthday_list[i][4] and time_now.tm_mday < birthday_list[i][3]) or time_now.tm_mon < birthday_list[i][4]):

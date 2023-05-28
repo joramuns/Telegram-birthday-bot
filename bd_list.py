@@ -12,12 +12,12 @@ def output(message):
             return "Либо месяца такого нет у нас в архивах, либо тебе русский язык стоит подучить!"
         else:
             s_month = "where bd_month = " + str(get_num_month[0] + 1)
-            birthday_list = sqlite_bot.bd_list(message, s_month, 0)
+            birthday_list = sqlite_bot.bd_list(message.chat.id, message.from_user.id, s_month, 0)
     else:
         message_out = "Моя русский не дружил, а дня рожденя в этом чате:\n"
         for i in range(len(config.monthes) + 1):
             s_month = "where bd_month = " + str(i)
-            birthday_list = sqlite_bot.bd_list(message, s_month, 1)
+            birthday_list = sqlite_bot.bd_list(message.chat.id, message.from_user.id, s_month, 1)
             if birthday_list[0][0]:
                 message_out = message_out + config.seasons[i - 1] + " <b>" + str(birthday_list[0][0]) + "</b> штук для " + str(config.monthes[i - 1]) + "\n"
         return message_out

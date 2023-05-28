@@ -9,16 +9,10 @@ import random
 
 bot = telebot.TeleBot(config.token);
 bot_id = bot.get_me().id
-last_message=""
 
 @bot.message_handler(commands=["ближайшаяднюха", "birthday_next"])
 def birthday_next(message):
-    global last_message
-    if not last_message:
-        last_message = message
-        last_message.from_user.id = bot_id
-
-    output_message = bd_next.output(message)
+    output_message = bd_next.output(message.chat.id, message.from_user.id)
     bot.send_message(message.chat.id, output_message, reply_to_message_id=config.manual_thread_id, parse_mode="HTML")
 
 @bot.message_handler(commands=["днюхи", "birthday_list"])
@@ -38,13 +32,9 @@ def helpmenu(message):
 event_job = threading.Event()
 def job_handler():
     while not event_job.is_set():
-        if (last_message):
-            job_message="Посмотрим-ка, что там у нас в календаре..."
-            bot.send_message(config.manual_chat_id, job_message, reply_to_message_id=config.manual_thread_id)
-            birthday_next(last_message)
-        else:
-            job_message="Ох, опять разбудили! \U000023F0"
-            bot.send_message(config.manual_chat_id, job_message, reply_to_message_id=config.manual_thread_id)
+        job_message="Посмотрим-ка, что там у нас в календаре..."
+        output_message = bd_next.output(config.manual_chat_id, bot_id)
+        bot.send_message(config.manual_chat_id, output_message, reply_to_message_id=config.manual_thread_id, parse_mode="HTML")
         event_job.wait(43200)
 
 job_thread = threading.Thread(target=job_handler)
