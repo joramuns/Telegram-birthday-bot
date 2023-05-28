@@ -2,8 +2,7 @@
 import telebot
 from telebot.types import BotCommand
 import re, time
-import config, sqlite_bot
-import birthday_next
+import config, sqlite_bot, bd_next
 import threading
 #temp
 import random
@@ -43,21 +42,22 @@ def birthday_next(message):
         last_message = message
         last_message.from_user.id = bot_id
 
-    output_message = birthday_next_handler(message)
-    bot.send_message(message.chat.id, message_next, reply_to_message_id=manual_thread_id, parse_mode="HTML")
+    # output_message = "aboba"
+    output_message = bd_next.output(message)
+    bot.send_message(message.chat.id, output_message, reply_to_message_id=config.manual_thread_id, parse_mode="HTML")
 
 @bot.message_handler(commands=["днюхи", "birthday_list"])
 def birthday_list(message):
     # Cut version for big data
     array_words = message.text.split()
     if (len(array_words) > 2):
-        bot.send_message(message.chat.id, "Нужно ввести команду и через пробел дату без лишних слов!", reply_to_message_id=manual_thread_id)
+        bot.send_message(message.chat.id, "Нужно ввести команду и через пробел дату без лишних слов!", reply_to_message_id=config.manual_thread_id)
         return
 
     if (len(array_words) == 2):
         get_num_month = [n for n, x in enumerate(config.monthes) if array_words[1] in x]
         if len(get_num_month) == 0:
-            bot.send_message(message.chat.id, "Либо месяца такого нет у нас в архивах, либо тебе русский язык стоит подучить!", reply_to_message_id=manual_thread_id)
+            bot.send_message(message.chat.id, "Либо месяца такого нет у нас в архивах, либо тебе русский язык стоит подучить!", reply_to_message_id=config.manual_thread_id)
             return
         else:
             s_month = "where bd_month = " + str(get_num_month[0] + 1)
@@ -69,11 +69,11 @@ def birthday_list(message):
             birthday_list = sqlite_bot.bd_list(message, s_month, 1)
             if birthday_list[0][0]:
                 message_out = message_out + config.seasons[i - 1] + " <b>" + str(birthday_list[0][0]) + "</b> штук для " + str(config.monthes[i - 1]) + "\n"
-        bot.send_message(message.chat.id, message_out, parse_mode="HTML", reply_to_message_id=manual_thread_id)
+        bot.send_message(message.chat.id, message_out, parse_mode="HTML", reply_to_message_id=config.manual_thread_id)
         return
 
     if not birthday_list:
-        bot.send_message(message.chat.id, "Список дней рождения еще пуст", reply_to_message_id=manual_thread_id)
+        bot.send_message(message.chat.id, "Список дней рождения еще пуст", reply_to_message_id=config.manual_thread_id)
         return
     birthday_list_sorted = ['', '', '']
     message_list = "Вот такие у нас именниники в чате:\n"
@@ -108,7 +108,7 @@ def birthday_list(message):
 
     message_list = message_list + birthday_list_sorted[0] + birthday_list_sorted[1] + birthday_list_sorted[2]
 
-    bot.send_message(message.chat.id, message_list, parse_mode="HTML", reply_to_message_id=manual_thread_id)
+    bot.send_message(message.chat.id, message_list, parse_mode="HTML", reply_to_message_id=config.manual_thread_id)
 
 @bot.message_handler(commands=["днюха", "birthday"])
 def birthday(message):
@@ -116,7 +116,7 @@ def birthday(message):
     pattern_birthday = "([0-9]{2})\.([0-9]{2})\.([0-9]{4})$"
     pattern_birthday2 = "([0-9]{2})\.([0-9]{2})$"
     if (len(array_words) > 2):
-        bot.send_message(message.chat.id, "Нужно ввести команду и через пробел дату без лишних слов!", reply_to_message_id=manual_thread_id)
+        bot.send_message(message.chat.id, "Нужно ввести команду и через пробел дату без лишних слов!", reply_to_message_id=config.manual_thread_id)
         return
 
     if (len(array_words) == 1):
@@ -127,16 +127,16 @@ def birthday(message):
                 message_done = message_done + " неизвестно какого года."
             else:
                 message_done = message_done + " " + str(check_register[0][5]) + " года!"
-            bot.send_message(message.chat.id, message_done, reply_to_message_id=manual_thread_id)
+            bot.send_message(message.chat.id, message_done, reply_to_message_id=config.manual_thread_id)
             return
         else:
-            bot.send_message(message.chat.id, "Необходимо ввести команду\n/birthday и через пробел дату рождения в формате ДД.ММ.ГГГГ или ДД.ММ, если есть что скрывать", reply_to_message_id=manual_thread_id)
+            bot.send_message(message.chat.id, "Необходимо ввести команду\n/birthday и через пробел дату рождения в формате ДД.ММ.ГГГГ или ДД.ММ, если есть что скрывать", reply_to_message_id=config.manual_thread_id)
         return
 
     birthdate = array_words[1]
 
     if not re.match(pattern_birthday, birthdate) and not re.match(pattern_birthday2, birthdate):
-        bot.send_message(message.chat.id, "Формат даты принимается только в таких видах - 00.00.0000 или 00.00", reply_to_message_id=manual_thread_id)
+        bot.send_message(message.chat.id, "Формат даты принимается только в таких видах - 00.00.0000 или 00.00", reply_to_message_id=config.manual_thread_id)
         return
 
     day = birthdate[:2]
@@ -147,36 +147,36 @@ def birthday(message):
         year = '0'
 
     if int(day) < 1 or int(day) > 31:
-        bot.send_message(message.chat.id, "Такого дня не может быть", reply_to_message_id=manual_thread_id)
+        bot.send_message(message.chat.id, "Такого дня не может быть", reply_to_message_id=config.manual_thread_id)
         return
 
     if int(month) < 1 or int(month) > 12:
-        bot.send_message(message.chat.id, "В году 12 месяцев, вообще-то", reply_to_message_id=manual_thread_id)
+        bot.send_message(message.chat.id, "В году 12 месяцев, вообще-то", reply_to_message_id=config.manual_thread_id)
         return
 
     if (year == '0000'):
-        bot.send_message(message.chat.id, "А ты француз, бом бом бом!", reply_to_message_id=manual_thread_id)
+        bot.send_message(message.chat.id, "А ты француз, бом бом бом!", reply_to_message_id=config.manual_thread_id)
         return
 
     if ((int(year) > time.localtime().tm_year - 1) or int(year) < 1922) and (int(year) != 0):
-        bot.send_message(message.chat.id, "Ну не может быть такого года рождения, что за вздор", reply_to_message_id=manual_thread_id)
+        bot.send_message(message.chat.id, "Ну не может быть такого года рождения, что за вздор", reply_to_message_id=config.manual_thread_id)
         return
 
     if (int(year) == time.localtime().tm_year and int(month) >= time.localtime().tm_mon and int(day) > time.localtime().tm_mday):
-        bot.send_message(message.chat.id, "Аларм! В чате гость из будущего!", reply_to_message_id=manual_thread_id)
+        bot.send_message(message.chat.id, "Аларм! В чате гость из будущего!", reply_to_message_id=config.manual_thread_id)
         return
 
     if int(day) > config.monthes_length[int(month)-1]:
         if (int(month) == 2 and int(year) != 0):
             if (int(year) % 4 != 0):
-                bot.send_message(message.chat.id, "Это не високосный год, какое "+ day +"-е февраля!?", reply_to_message_id=manual_thread_id)
+                bot.send_message(message.chat.id, "Это не високосный год, какое "+ day +"-е февраля!?", reply_to_message_id=config.manual_thread_id)
                 return
         else:
-            bot.send_message(message.chat.id, "А нет столько дней в этом месяце!", reply_to_message_id=manual_thread_id)
+            bot.send_message(message.chat.id, "А нет столько дней в этом месяце!", reply_to_message_id=config.manual_thread_id)
             return
 
     if int(month) == 2 and int(day) > 29:
-        bot.send_message(message.chat.id, "Нет столько дней в этом феврале!", reply_to_message_id=manual_thread_id)
+        bot.send_message(message.chat.id, "Нет столько дней в этом феврале!", reply_to_message_id=config.manual_thread_id)
         return
 
     if not message.from_user.username:
@@ -204,22 +204,22 @@ def birthday(message):
         else:
             message_done = message_done + " , в " + year + " году."
 
-    bot.send_message(message.chat.id, message_done, parse_mode="HTML", reply_to_message_id=manual_thread_id)
+    bot.send_message(message.chat.id, message_done, parse_mode="HTML", reply_to_message_id=config.manual_thread_id)
 
 @bot.message_handler(commands=["помощь"])
 def helpmenu(message):
-    bot.send_message(message.chat.id, "<b>Инструкция по днюхоботу:</b>\n\n- <b>\"/днюха ДД.ММ.ГГГГ\"</b> - установить свою дату рождения в формате ДД.ММ.ГГГГ или ДД.ММ\n- <b>\"/днюха\"</b> - посмотреть какую дату рождения будет отображать бот у тебя\n- <b>\"/днюхи\"</b> - посмотреть сколько именниников в каждом месяце в этом чате\n- <b>\"/днюхи января\"</b> - посмотреть какие дни рождения в январе (или в другом месяце, указывать в родительном падеже)\n- <b>\"/ближайшаяднюха\"</b> - покажет кто скоро проставляется!", parse_mode="HTML", reply_to_message_id=manual_thread_id)
+    bot.send_message(message.chat.id, "<b>Инструкция по днюхоботу:</b>\n\n- <b>\"/днюха ДД.ММ.ГГГГ\"</b> - установить свою дату рождения в формате ДД.ММ.ГГГГ или ДД.ММ\n- <b>\"/днюха\"</b> - посмотреть какую дату рождения будет отображать бот у тебя\n- <b>\"/днюхи\"</b> - посмотреть сколько именниников в каждом месяце в этом чате\n- <b>\"/днюхи января\"</b> - посмотреть какие дни рождения в январе (или в другом месяце, указывать в родительном падеже)\n- <b>\"/ближайшаяднюха\"</b> - покажет кто скоро проставляется!", parse_mode="HTML", reply_to_message_id=config.manual_thread_id)
 
 event_job = threading.Event()
 def job_handler():
     while not event_job.is_set():
         if (last_message):
             job_message="Посмотрим-ка, что там у нас в календаре..."
-            bot.send_message(manual_chat_id, job_message, reply_to_message_id=manual_thread_id)
+            bot.send_message(config.manual_chat_id, job_message, reply_to_message_id=config.manual_thread_id)
             birthday_next(last_message)
         else:
             job_message="Ох, опять разбудили! \U000023F0"
-            bot.send_message(manual_chat_id, job_message, reply_to_message_id=manual_thread_id)
+            bot.send_message(config.manual_chat_id, job_message, reply_to_message_id=config.manual_thread_id)
         event_job.wait(43200)
 
 job_thread = threading.Thread(target=job_handler)

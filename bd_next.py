@@ -1,4 +1,6 @@
-def birthday_next_handler(message)
+import sqlite_bot, time, config
+
+def output(message):
     birthday_list = sqlite_bot.bd_list(message, "", 0)
     if not birthday_list:
         bot.send_message(message.chat.id, "Список дней рождений еще пуст", reply_to_message_id=manual_thread_id)
