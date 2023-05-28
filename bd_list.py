@@ -11,19 +11,29 @@ def output(message):
         if len(get_num_month) == 0:
             return "Либо месяца такого нет у нас в архивах, либо тебе русский язык стоит подучить!"
         else:
-            s_month = "where bd_month = " + str(get_num_month[0] + 1)
-            birthday_list = sqlite_bot.bd_list(message.chat.id, message.from_user.id, s_month, 0)
+            message_out = month_list(get_num_month, message.from_user.id)
+            return message_out
     else:
-        message_out = "Моя русский не дружил, а дня рожденя в этом чате:\n"
-        for i in range(len(config.monthes) + 1):
-            s_month = "where bd_month = " + str(i)
-            birthday_list = sqlite_bot.bd_list(message.chat.id, message.from_user.id, s_month, 1)
-            if birthday_list[0][0]:
-                message_out = message_out + config.seasons[i - 1] + " <b>" + str(birthday_list[0][0]) + "</b> штук для " + str(config.monthes[i - 1]) + "\n"
+        message_out = common_list(message.from_user.id)
         return message_out
 
     if not birthday_list:
         return "Список дней рождения еще пуст"
+
+
+def common_list(user_id):
+    message_out = "Количество именинников в каждом месяце:\n"
+    for i in range(len(config.monthes) + 1):
+        s_month = "where bd_month = " + str(i)
+        birthday_list = sqlite_bot.bd_list(config.manual_chat_id, user_id, s_month, 1)
+        if birthday_list[0][0]:
+            message_out = message_out + config.seasons[i - 1] + " <b>" + str(birthday_list[0][0]) + "</b> штук для " + str(config.monthes[i - 1]) + "\n"
+
+    return message_out
+
+def month_list(get_num_month, user_id):
+    s_month = "where bd_month = " + str(get_num_month[0] + 1)
+    birthday_list = sqlite_bot.bd_list(config.manual_chat_id, user_id, s_month, 0)
 
     birthday_list_sorted = ['', '', '']
     message_list = "Вот такие у нас именниники в чате:\n"
@@ -53,7 +63,6 @@ def output(message):
             else:
                 str_age = "С " + str(time_now.tm_year - birthday_list[i][5]) + " летием, " + birthday_list[i][2] + "!!!"
             birthday_list_sorted[0] = birthday_list_sorted[0] + "\n\U0001F389 Сегодня, " + str(birthday_list[i][3]) + " " + config.monthes[birthday_list[i][4]-1] + ", у <b>" + birthday_list[i][2] + "</b> день рождения! "  + str_age
-
 
     message_list = message_list + birthday_list_sorted[0] + birthday_list_sorted[1] + birthday_list_sorted[2]
 

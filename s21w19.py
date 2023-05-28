@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import telebot
-from telebot.types import BotCommand
+from telebot.types import BotCommand, InlineKeyboardMarkup, InlineKeyboardButton
 import re, time
 import config, sqlite_bot, bd_next, bd, bd_list
 import threading
@@ -15,10 +15,20 @@ def birthday_next(message):
     output_message = bd_next.output(message.chat.id, message.from_user.id)
     bot.send_message(message.chat.id, output_message, reply_to_message_id=config.manual_thread_id, parse_mode="HTML")
 
+@bot.callback_query_handler(func=lambda call: True)
+def inline_keyboard(call):
+    bot.send_message(config.manual_chat_id, call.data, reply_to_message_id=config.manual_thread_id)
+
 @bot.message_handler(commands=["днюхи", "birthday_list"])
 def birthday_list(message):
+    options = []
+    reply_markup = InlineKeyboardMarkup([options])
+    for item in config.monthes:
+        button = InlineKeyboardButton(item, callback_data=item)
+        reply_markup.row(button)
+
     output_message=bd_list.output(message)
-    bot.send_message(message.chat.id, output_message, parse_mode="HTML", reply_to_message_id=config.manual_thread_id)
+    bot.send_message(message.chat.id, output_message, parse_mode="HTML", reply_to_message_id=config.manual_thread_id, reply_markup=reply_markup)
 
 @bot.message_handler(commands=["днюха", "birthday"])
 def birthday(message):
