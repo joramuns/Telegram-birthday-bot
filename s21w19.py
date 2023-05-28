@@ -17,7 +17,9 @@ def birthday_next(message):
 
 @bot.callback_query_handler(func=lambda call: True)
 def inline_keyboard(call):
-    bot.send_message(config.manual_chat_id, call.data, reply_to_message_id=config.manual_thread_id)
+    get_num_month = [n for n, x in enumerate(config.monthes) if call.data in x]
+    output_message = bd_list.month_list(get_num_month, bot_id)
+    bot.send_message(config.manual_chat_id, output_message, reply_to_message_id=config.manual_thread_id, parse_mode="HTML")
 
 @bot.message_handler(commands=["днюхи", "birthday_list"])
 def birthday_list(message):
