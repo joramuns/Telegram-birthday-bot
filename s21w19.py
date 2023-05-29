@@ -3,7 +3,7 @@ import asyncio
 from telebot.async_telebot import AsyncTeleBot
 from telebot.types import BotCommand, InlineKeyboardMarkup, InlineKeyboardButton
 import re, time, datetime
-import config, sqlite_bot, bd_next, bd, bd_list
+import config, sqlite_bot, bd_next, bd, bd_list, keyboard
 import threading
 #temp
 import random
@@ -18,17 +18,22 @@ async def birthday_next(message):
 
 @bot.callback_query_handler(func=lambda call: True)
 async def inline_keyboard(call):
-    get_num_month = [n for n, x in enumerate(config.monthes) if call.data in x]
-    output_message = bd_list.month_list(get_num_month, bot_id)
-    await bot.send_message(config.manual_chat_id, output_message, reply_to_message_id=config.manual_thread_id, parse_mode="HTML")
+    month_data, owner = call.data.split(':')
+    owner = int(owner)
+    if owner != call.from_user.id:
+        return
+    get_num_month = [n for n, x in enumerate(config.monthes) if month_data in x]
+    if len(get_num_month) > 0:
+        output_message = bd_list.month_list(get_num_month, bot_id)
+        await bot.send_message(config.manual_chat_id, output_message, reply_to_message_id=config.manual_thread_id, parse_mode="HTML")
+        await bot.edit_message_text(chat_id=config.manual_chat_id, message_id=call.message.message_id, text=call.message.text)
+    else:
+        reply_markup = keyboard.button_setter(month_data, owner)
+        await bot.edit_message_text(chat_id=config.manual_chat_id, message_id=call.message.message_id, text=call.message.text, reply_markup=reply_markup)
 
 @bot.message_handler(commands=["днюхи", "birthday_list"])
 async def birthday_list(message):
-    options = []
-    reply_markup = InlineKeyboardMarkup([options])
-    for item in config.monthes:
-        button = InlineKeyboardButton(item, callback_data=item)
-        reply_markup.row(button)
+    reply_markup = keyboard.button_setter("0", str(message.from_user.id))
 
     output_message=bd_list.output(message)
     await bot.send_message(message.chat.id, output_message, parse_mode="HTML", reply_to_message_id=config.manual_thread_id, reply_markup=reply_markup)
