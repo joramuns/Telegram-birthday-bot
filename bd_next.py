@@ -6,6 +6,7 @@ def count_days(chat_id, user_id):
         return "Список дней рождений еще пуст"
 
     now = datetime.datetime.now()
+    now = now.replace(hour=0, minute=0, second=0, microsecond=0)
     min_this_year = 365
     max_next_year = -min_this_year
 
